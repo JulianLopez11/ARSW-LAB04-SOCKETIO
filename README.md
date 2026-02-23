@@ -49,27 +49,39 @@ npm run dev
 
 ---
 
-## 🔌 Endpoints REST (mínimos)
-Se usan para cargar el **estado inicial** del plano antes de empezar a dibujar.
+## 🔌 Endpoints REST (mínimos) Se añadieron los siguentes ENDPoints
 
-- **GET** `/api/blueprints/:author/:name`  
-  **200 OK**
-  ```json
-  {
-    "author": "juan",
-    "name": "plano-1",
-    "points": [{ "x":10, "y":10 }, { "x":40, "y":50 }]
+```java
+//GET
+app.get('/api/v1/blueprints/:author', (req, res) => {
+  const filtered = blueprints.filter(bp => bp.author === req.params.author);
+  res.json({ data: filtered });
+});
+
+//GET
+app.get('/api/v1/blueprints/:author/:name', (req, res) => {
+  const bp = blueprints.find(b => b.author === req.params.author && b.name === req.params.name);
+  res.json(bp ? { data: bp } : { message: 'No encontrado' });
+});
+
+//POST
+app.post('/api/v1/blueprints', (req, res) => {
+  const { author, name, points } = req.body;
+  if (blueprints.some(b => b.author === author && b.name === name)) {
+    return res.status(400).json({ message: "El plano ya existe" });
   }
-  ```
+  blueprints.push({ author, name, points: points || [] });
+  res.status(201).json({ message: 'Creado' });
+});
 
-**Curl de prueba**
-```bash
-curl http://localhost:3001/api/blueprints/juan/plano-1
+//DELETE
+app.delete('/api/v1/blueprints/:author/:name', (req, res) => {
+  blueprints = blueprints.filter(b => !(b.author === req.params.author && b.name === req.params.name));
+  res.status(200).json({ message: 'Eliminado' });
+});
 ```
 
-> Este ejemplo se centra en **tiempo real**. El **CRUD completo** (POST/PUT/DELETE/list) lo implementas en tu API del curso.
 
----
 
 ## 🔴 Eventos Socket.IO
 
@@ -111,11 +123,29 @@ En el **frontend (Blueprints P4)**:
    ```
 2. Levanta el front:
    ```bash
-   npm i
+   npm install
    npm run dev
    ```
 3. En la UI, selecciona **Socket.IO** como tecnología RT, elige `autor` y `plano`, abre **dos pestañas** y haz clic en el canvas: verás el trazo replicado.
 
+## Evidencia 
+
+Se corre el servidor en el cmd
+
+![alt text](docs/img/cmd.png)
+---
+
+![alt text](docs/img/primerpag.png)
+---
+
+Se dibuja algo mas en la otra pagina y se ve asi 
+
+![alt text](docs/img/segundapag.png)
+---
+
+Volvemos a la pagina inicial y se ven los cambios
+
+![alt text](docs/img/tercerapag.png)
 ---
 
 ## ⚙️ Configuración
@@ -153,19 +183,7 @@ En el **frontend (Blueprints P4)**:
 
 ---
 
-## 📚 Extensiones sugeridas
-- **Persistencia**: guardar puntos (memoria/Redis/Postgres).
-- **Escalado**: adapter Redis para múltiples instancias.
-- **Métricas**: logs de join/leave, ping-pong de latencia.
-- **Seguridad**: JWT + autorización por sala.
 
----
+## Autor
 
-## ✅ Checklist de entrega
-- [ ] `GET /api/blueprints/:author/:name` retorna puntos iniciales.  
-- [ ] Clientes se unen a `room = blueprints.{author}.{name}`.  
-- [ ] `draw-event` → broadcast `blueprint-update` a la sala.  
-- [ ] Front refleja el trazo en **< 1s** en 2+ pestañas.  
-- [ ] Domento de laboratorio donde explica **setup** e **integración** con el front.
-
----
+* **Julian Camilo Lopez Barrero** - [JulianLopez11](https://github.com/JulianLopez11)
